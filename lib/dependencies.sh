@@ -92,13 +92,12 @@ run_prebuild_script() {
 
 run_build_script() {
   local build_dir=${1:-}
-  local build_package_dir="$build_dir/$APP_BASE"
-  local has_build_script has_heroku_build_script
+  local build_custom_script=${2:-}
+  local has_build_script has_custom_build_script has_heroku_build_script
 
-  header "Building in $build_package_dir"
-
-  has_build_script=$(has_script "$build_package_dir/package.json" "build")
-  has_heroku_build_script=$(has_script "$build_package_dir/package.json" "heroku-postbuild")
+  has_build_script=$(has_script "$build_dir/package.json" "build")
+  has_custom_build_script=$(has_script "$build_dir/package.json" "$build_custom_script")
+  has_heroku_build_script=$(has_script "$build_dir/package.json" "heroku-postbuild")
   if [[ "$has_heroku_build_script" == "true" ]] && [[ "$has_build_script" == "true" ]]; then
     echo "Detected both \"build\" and \"heroku-postbuild\" scripts"
     mcount "scripts.heroku-postbuild-and-build"
@@ -106,6 +105,8 @@ run_build_script() {
   elif [[ "$has_heroku_build_script" == "true" ]]; then
     mcount "scripts.heroku-postbuild"
     run_if_present "$build_dir" 'heroku-postbuild'
+  elif [[ "$has_custom_build_script" == "true" ]]; then
+    run_build_if_present "$build_dir" "$build_custom_script"
   elif [[ "$has_build_script" == "true" ]]; then
     mcount "scripts.build"
     run_build_if_present "$build_dir" 'build'

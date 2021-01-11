@@ -92,10 +92,13 @@ run_prebuild_script() {
 
 run_build_script() {
   local build_dir=${1:-}
+  local build_package_dir="$build_dir/$APP_BASE"
   local has_build_script has_heroku_build_script
 
-  has_build_script=$(has_script "$build_dir/package.json" "build")
-  has_heroku_build_script=$(has_script "$build_dir/package.json" "heroku-postbuild")
+  header "Building in $build_package_dir"
+
+  has_build_script=$(has_script "$build_package_dir/package.json" "build")
+  has_heroku_build_script=$(has_script "$build_package_dir/package.json" "heroku-postbuild")
   if [[ "$has_heroku_build_script" == "true" ]] && [[ "$has_build_script" == "true" ]]; then
     echo "Detected both \"build\" and \"heroku-postbuild\" scripts"
     mcount "scripts.heroku-postbuild-and-build"
